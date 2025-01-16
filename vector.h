@@ -79,11 +79,11 @@ namespace custom
       class iterator;
       iterator begin()
       {
-         return iterator();
+         return iterator(data);
       }
       iterator end()
       {
-         return iterator();
+         return iterator(data + numElements);
       }
 
       //
@@ -113,7 +113,7 @@ namespace custom
          // Destroy all elements
          for (size_t i = 0; i < numElements; i++)
             alloc.destroy(data + i);
-         
+
          numElements = 0;
       }
       void pop_back()
@@ -124,20 +124,14 @@ namespace custom
       //
       // Status
       //
-      size_t  size()          const {
-         return numElements;
-      }
-      size_t  capacity()      const {
-         return numCapacity;
-      }
-      bool empty()            const {
-         return numElements == 0;
-      }
+      size_t  size()          const { return numElements;      }
+      size_t  capacity()      const { return numCapacity;      }
+      bool    empty()         const { return numElements == 0; }
 
    private:
 
-      A    alloc;                // use allocator for memory allocation
-      T* data;                 // user data, a dynamically-allocated array
+      A  alloc;                  // use allocator for memory allocation
+      T* data;                   // user data, a dynamically-allocated array
       size_t  numCapacity;       // the capacity of the array
       size_t  numElements;       // the number of items currently used
    };
@@ -162,55 +156,58 @@ namespace custom
       friend class ::TestHash;
    public:
       // constructors, destructors, and assignment operator
-      iterator() {
-      }
-      iterator(T* p) {
-      }
-      iterator(const iterator& rhs) {
-      }
-      iterator(size_t index, vector<T>& v) {
-      }
+      iterator() : p(nullptr) {}
+      iterator(T* p) : p(p) {}
+      iterator(const iterator& rhs) : p(rhs.p) {}
+      iterator(size_t index, vector<T>& v) : p(v.data + index) { }
       iterator& operator = (const iterator& rhs)
       {
+         p = rhs.p;
          return *this;
       }
 
       // equals, not equals operator
       bool operator != (const iterator& rhs) const {
-         return true;
+         return p != rhs.p;
       }
       bool operator == (const iterator& rhs) const {
-         return true;
+         return p == rhs.p;
       }
 
       // dereference operator
       T& operator * ()
       {
-         return *(new T);
+         return *p;
       }
 
       // prefix increment
       iterator& operator ++ ()
       {
+         p++;
          return *this;
       }
 
       // postfix increment
       iterator operator ++ (int postfix)
       {
-         return *this;
+         iterator temp(p);
+         p++;
+         return temp;
       }
 
       // prefix decrement
       iterator& operator -- ()
       {
+         p--;
          return *this;
       }
 
       // postfix decrement
       iterator operator -- (int postfix)
       {
-         return *this;
+         iterator temp(p);
+         p--;
+         return temp;
       }
 
    private:
@@ -517,11 +514,11 @@ namespace custom
                alloc.destroy(data + i);
             if (data)
                alloc.deallocate(data, numCapacity);
-            
+
             // Allocate new space
             numCapacity = rhs.numElements;
             data = alloc.allocate(numCapacity);
-            
+
             // Copy construct all elements
             for (size_t i = 0; i < rhs.numElements; i++)
                alloc.construct(data + i, rhs.data[i]);
@@ -531,7 +528,7 @@ namespace custom
             // Assign to existing elements
             for (size_t i = 0; i < rhs.numElements && i < numElements; i++)
                data[i] = rhs.data[i];
-            
+
             // If rhs is smaller, destroy excess elements
             if (rhs.numElements < numElements)
             {
@@ -545,10 +542,10 @@ namespace custom
                   alloc.construct(data + i, rhs.data[i]);
             }
          }
-         
+
          numElements = rhs.numElements;
       }
-      
+
       return *this;
    }
    template <typename T, typename A>

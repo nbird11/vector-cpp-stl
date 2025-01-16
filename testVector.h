@@ -61,19 +61,19 @@ public:
       test_swap_leftBigger();
 
       // Iterator
-      //test_iterator_beginEmpty();
-      //test_iterator_beginFull();
-      //test_iterator_endFull();
-      //test_iterator_incrementFull();
-      //test_iterator_dereferenceReadFull();
-      //test_iterator_dereferenceUpdate();
-      //test_iterator_construct_default();
-      //test_iterator_construct_pointer();
-      //test_iterator_construct_index();
-      //test_iterator_equals_same();
-      //test_iterator_equals_different();
-      //test_iterator_notEquals_same();
-      //test_iterator_notEquals_different();
+      test_iterator_beginEmpty();
+      test_iterator_beginFull();
+      test_iterator_endFull();
+      test_iterator_incrementFull();
+      test_iterator_dereferenceReadFull();
+      test_iterator_dereferenceUpdate();
+      test_iterator_construct_default();
+      test_iterator_construct_pointer();
+      test_iterator_construct_index();
+      test_iterator_equals_same();
+      test_iterator_equals_different();
+      test_iterator_notEquals_same();
+      test_iterator_notEquals_different();
 
       // Access
       //test_subscript_read();
@@ -118,12 +118,12 @@ public:
       test_shrink_twoExtraSlots();
       
       // Status
-      //test_size_empty();
-      //test_size_full();
-      //test_empty_empty();
-      //test_empty_full();
-      //test_capacity_empty();
-      //test_capacity_full();
+      test_size_empty();
+      test_size_full();
+      test_empty_empty();
+      test_empty_full();
+      test_capacity_empty();
+      test_capacity_full();
 
       report("Vector");
    }
