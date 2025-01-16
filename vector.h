@@ -118,6 +118,11 @@ namespace custom
       }
       void pop_back()
       {
+         if (numElements != 0)
+         {
+            alloc.destroy(data + numElements - 1);
+            numElements--;
+         }
       }
       void shrink_to_fit();
 
