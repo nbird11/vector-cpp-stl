@@ -65,6 +65,10 @@ namespace custom
       //
       void swap(vector& rhs)
       {
+         std::swap(data, rhs.data);
+         std::swap(numElements, rhs.numElements);
+         std::swap(numCapacity, rhs.numCapacity);
+         std::swap(alloc, rhs.alloc);
       }
       vector& operator = (const vector& rhs);
       vector& operator = (vector&& rhs);
@@ -106,6 +110,11 @@ namespace custom
       //
       void clear()
       {
+         // Destroy all elements
+         for (size_t i = 0; i < numElements; i++)
+            alloc.destroy(data + i);
+         
+         numElements = 0;
       }
       void pop_back()
       {
@@ -377,7 +386,30 @@ namespace custom
    template <typename T, typename A>
    void vector <T, A> ::shrink_to_fit()
    {
-
+      // If we have excess capacity
+      if (numCapacity > numElements)
+      {
+         // If we have elements, reallocate to exact size
+         if (numElements > 0)
+         {
+            T* newData = alloc.allocate(numElements);
+            for (size_t i = 0; i < numElements; i++)
+            {
+               alloc.construct(newData + i, data[i]);
+               alloc.destroy(data + i);
+            }
+            alloc.deallocate(data, numCapacity);
+            data = newData;
+            numCapacity = numElements;
+         }
+         // If no elements, free all memory
+         else
+         {
+            alloc.deallocate(data, numCapacity);
+            data = nullptr;
+            numCapacity = 0;
+         }
+      }
    }
 
 
@@ -474,12 +506,57 @@ namespace custom
    template <typename T, typename A>
    vector <T, A>& vector <T, A> :: operator = (const vector& rhs)
    {
-
+      // Handle self-assignment
+      if (this != &rhs)
+      {
+         // If we need more capacity
+         if (numCapacity < rhs.numElements)
+         {
+            // Clear existing elements and reallocate
+            for (size_t i = 0; i < numElements; i++)
+               alloc.destroy(data + i);
+            if (data)
+               alloc.deallocate(data, numCapacity);
+            
+            // Allocate new space
+            numCapacity = rhs.numElements;
+            data = alloc.allocate(numCapacity);
+            
+            // Copy construct all elements
+            for (size_t i = 0; i < rhs.numElements; i++)
+               alloc.construct(data + i, rhs.data[i]);
+         }
+         else
+         {
+            // Assign to existing elements
+            for (size_t i = 0; i < rhs.numElements && i < numElements; i++)
+               data[i] = rhs.data[i];
+            
+            // If rhs is smaller, destroy excess elements
+            if (rhs.numElements < numElements)
+            {
+               for (size_t i = rhs.numElements; i < numElements; i++)
+                  alloc.destroy(data + i);
+            }
+            // If rhs is larger, construct new elements
+            else if (rhs.numElements > numElements)
+            {
+               for (size_t i = numElements; i < rhs.numElements; i++)
+                  alloc.construct(data + i, rhs.data[i]);
+            }
+         }
+         
+         numElements = rhs.numElements;
+      }
+      
       return *this;
    }
    template <typename T, typename A>
    vector <T, A>& vector <T, A> :: operator = (vector&& rhs)
    {
+      clear();
+      shrink_to_fit();
+      swap(rhs);
 
       return *this;
    }
