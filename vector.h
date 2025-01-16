@@ -351,13 +351,39 @@ namespace custom
    template <typename T, typename A>
    void vector <T, A> ::resize(size_t newElements)
    {
-      numElements = 3;
+      if (newElements < numElements)
+      {
+         for (size_t i = newElements; i < numElements; i++)
+         {
+            alloc.destroy(data + i);
+         }
+      }
+      else if (newElements > numElements)
+      {
+         if (newElements > numCapacity)
+            reserve(newElements);
+         for (size_t i = numElements; i < newElements; i++)
+            alloc.construct(data + i);
+      }
+      numElements = newElements;
    }
 
    template <typename T, typename A>
    void vector <T, A> ::resize(size_t newElements, const T& t)
    {
-      numElements = 3;
+      if (newElements < numElements)
+      {
+         for (size_t i = newElements; i < numElements; i++)
+            alloc.destroy(data + i);
+      }
+      else if (newElements > numElements)
+      {
+         if (newElements > numCapacity)
+            reserve(newElements);
+         for (size_t i = numElements; i < newElements; i++)
+            alloc.construct(data + i, t);
+      }
+      numElements = newElements;
    }
 
    /***************************************
@@ -371,7 +397,19 @@ namespace custom
    template <typename T, typename A>
    void vector <T, A> ::reserve(size_t newCapacity)
    {
-      numCapacity = 99;
+      if (newCapacity <= numCapacity)
+         return;
+
+      T* dataNew = alloc.allocate(newCapacity);
+      for (size_t i = 0; i < numElements; i++)
+      {
+         alloc.construct(dataNew + i, std::move(data[i]));
+         alloc.destroy(data + i);
+      }
+      alloc.deallocate(data, numCapacity);
+
+      data = dataNew;
+      numCapacity = newCapacity;
    }
 
    /***************************************
@@ -418,8 +456,7 @@ namespace custom
    template <typename T, typename A>
    T& vector <T, A> :: operator [] (size_t index)
    {
-      return *(new T);
-
+      return data[index];
    }
 
    /******************************************
@@ -429,7 +466,7 @@ namespace custom
    template <typename T, typename A>
    const T& vector <T, A> :: operator [] (size_t index) const
    {
-      return *(new T);
+      return data[index];
    }
 
    /*****************************************
@@ -439,7 +476,7 @@ namespace custom
    template <typename T, typename A>
    T& vector <T, A> ::front()
    {
-      return *(new T);
+      return *data;
    }
 
    /******************************************
@@ -449,7 +486,7 @@ namespace custom
    template <typename T, typename A>
    const T& vector <T, A> ::front() const
    {
-      return *(new T);
+      return *data;
    }
 
    /*****************************************
@@ -459,7 +496,7 @@ namespace custom
    template <typename T, typename A>
    T& vector <T, A> ::back()
    {
-      return *(new T);
+      return data[numElements - 1];
    }
 
    /******************************************
@@ -469,7 +506,7 @@ namespace custom
    template <typename T, typename A>
    const T& vector <T, A> ::back() const
    {
-      return *(new T);
+      return data[numElements - 1];
    }
 
    /***************************************
@@ -483,14 +520,23 @@ namespace custom
    template <typename T, typename A>
    void vector <T, A> ::push_back(const T& t)
    {
-
+      if (numCapacity == numElements)
+      {
+         reserve((numCapacity != 0 ? numCapacity * 2 : 1));
+      }
+      alloc.construct(data + numElements, t);
+      numElements++;
    }
 
    template <typename T, typename A>
    void vector <T, A> ::push_back(T&& t)
    {
-
-
+      if (numCapacity == numElements)
+      {
+         reserve((numCapacity != 0 ? numCapacity * 2 : 1));
+      }
+      alloc.construct(data + numElements, std::move(t));
+      numElements++;
    }
 
    /***************************************
