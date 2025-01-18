@@ -24,10 +24,6 @@
 #include <new>      // std::bad_alloc
 #include <memory>   // for std::allocator
 
- // DELETEME
-#include <vector>
-// /DELETEME
-
 class TestVector; // forward declaration for unit tests
 class TestStack;
 class TestPQueue;
@@ -43,7 +39,7 @@ namespace custom
    template <typename T, typename A = std::allocator<T>>
    class vector
    {
-      friend class ::TestVector; // give unit tests access to the privates
+      friend class ::TestVector; // give unit tests access to private
       friend class ::TestStack;
       friend class ::TestPQueue;
       friend class ::TestHash;
